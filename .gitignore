@@ -1,0 +1,19 @@
+# Node
+node_modules/
+backend/**/node_modules/
+
+# Build outputs
+backend/frontend/dist/
+
+# Env files
+.env
+.env.*
+backend/**/.env
+backend/**/.env.*
+
+# OS/editor
+.DS_Store
+.vscode/
+
+# Large archives
+*.zip
