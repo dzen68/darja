@@ -1,5 +1,4 @@
 import "dotenv/config";
-import { connectDatabase } from "../config/db.js";
 import User from "../models/User.js";
 import Product from "../models/Product.js";
 
@@ -126,9 +125,18 @@ const sectionProducts = [
   featured,
 }));
 
-async function seed() {
-  await connectDatabase();
+// Called at server startup — skips if developer already exists
+export async function runSeedIfNeeded() {
+  const email = (process.env.DEV_EMAIL || "developer@darjafashion.com").toLowerCase();
+  const existing = await User.findOne({ email });
+  if (existing && existing.role === "developer") {
+    console.log("Seed: developer account already exists, skipping.");
+    return;
+  }
+  await seedData();
+}
 
+async function seedData() {
   const email = (process.env.DEV_EMAIL || "developer@darjafashion.com").toLowerCase();
   let developer = await User.findOne({ email });
 
@@ -157,10 +165,23 @@ async function seed() {
   const result = await Product.bulkWrite(operations);
   console.log(`${result.upsertedCount} new products inserted; existing products kept.`);
 
-  process.exit(0);
 }
 
-seed().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+// Allow running directly: node src/scripts/seed.js
+import { pathToFileURL } from "node:url";
+import path from "node:path";
+import { connectDatabase } from "../config/db.js";
+
+const isDirectRun =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (isDirectRun) {
+  connectDatabase()
+    .then(seedData)
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error(error);
+      process.exit(1);
+    });
+}

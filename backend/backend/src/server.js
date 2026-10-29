@@ -7,6 +7,7 @@ import morgan from "morgan";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 import { connectDatabase } from "./config/db.js";
+import { runSeedIfNeeded } from "./scripts/seed.js";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -56,6 +57,7 @@ const retryDelay = 5000;
 async function startServer() {
   try {
     await connectDatabase();
+    await runSeedIfNeeded();
     app.listen(port, () => console.log(`Darja Fashion API: http://localhost:${port}`));
   } catch (error) {
     console.error("Database connection failed:", error.message);
