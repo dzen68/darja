@@ -4,6 +4,8 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
+import { pathToFileURL } from "node:url";
+import path from "node:path";
 import { connectDatabase } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -13,6 +15,9 @@ import { errorHandler, notFound } from "./middleware/error.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
+const isDirectRun =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
@@ -59,4 +64,8 @@ async function startServer() {
   }
 }
 
-startServer();
+if (isDirectRun) {
+  startServer();
+}
+
+export default app;
